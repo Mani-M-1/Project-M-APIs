@@ -12,17 +12,17 @@ const Organization = require('../Models/Organization');
 router.post('/add-user/:orgId', async (req, res) => {
     const {orgId} = req.params;
     
-    const userFromDb = await Organization.findOne({username: req.body.username, organizationId: orgId});
+    const userFromDb = await Organization.findOne({username: req.body.username});
     // console.log(userFromDb)
     
-    const emailFromDb = await Organization.findOne({email: req.body.email, organizationId: orgId});
+    const emailFromDb = await Organization.findOne({email: req.body.email});
     // console.log(emailFromDb)
     
     const orgDetails = await Organization.findOne({ _id: req.body.adminId, organizationId: orgId});
     // console.log(orgDetails)
     
 
-    try {
+    // try {
 
         if (!userFromDb) { // checking whether "username" already exists in database
             if (!emailFromDb) {  // checking whether "email" already exists in database
@@ -35,97 +35,85 @@ router.post('/add-user/:orgId', async (req, res) => {
 
                     // const tempUsername = req.body.email.split("@")[0];
 
-                    const user = await Organization({
-                        // username: tempUsername,
-                        username: req.body.username,
-                        email: req.body.email,
-                        password: req.body.password,
-                        organizationId: orgId,
-                        // organizationId: "646363",
-                        organizationName: orgDetails.organizationName,
-                        role: req.body.role,
-                        createdDate: new Date()
-                    });
-
-                    await user.save();
-
-                    
-
-                    // Email code 
-
-                    const output = `
-                    <b>Hi ${req.body.username}</b>
-                    <p>You have a request from ( ${orgDetails.email} ) to join Project-M</p>
-                    <p>Your temporary details are created by your Admin, use those details to login to Project-M application</p>
-                    <b>Details:</b>
-                    <ul style="padding: 0;">
-                    <li style="list-style-type: none;">Username: ${req.body.username}</li>
-                    <li style="list-style-type: none;">Email: ${req.body.email}</li>
-                    <li style="list-style-type: none;">Password: ${req.body.password}</li>
-                    </ul>
-                    </br>
-                    <p>Please <a href="${req.body.frontendUrl}/login" target="_blank"> click here </a> to enter the Project-M Application
-                    </br>
-                    </hr>
-                    <b>Note:</b>
-                    <p>1) Please don't share these information to anyone</p>
-                    <p>2) You have an option to change these temporary details after you logged into the Project-M application</p>
-                    <p>3) Just click on "Profile" in your menu to change any details</p>`
-
-
-                    // console.log(output)
-
-                    const config = {
-                        service: 'gmail',
-                        auth: {
-                            user: orgDetails.email,
-                            pass: process.env.MAIL_PASS
-                        }
-                    }
-
-
-                    const transporter = nodemailer.createTransport(config)
-                    // const transporter = nodemailer.createTransport({
-                    //     host: "smtp.ethereal.email",
-                    //     port: 587,
-                    //     secure: false,
-                    //     // port: 465,
-                    //     // secure: true,
-                    //     auth: {
-                    //         // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-                    //         user: "noah.von95@ethereal.email",
-                    //         pass: "CWcWbreGA3jx7sZS5b",
-                    //     },
-                    //     tls: {
-                    //         rejectUnauthorized: false
-                    //     }
-                    // });
-
-                    // async..await is not allowed in global scope, must use a wrapper
-                    async function main() {
-                        // send mail with defined transport object
-                        const info = await transporter.sendMail({
-                            // from: '"Manikanta 👻" <foo@noah.von95@ethereal.email>', // sender address
-                            // from: 'noah.von95@ethereal.email',
-                            from: `${orgDetails.email}`,
-                            // to: 'biyiwo3735@ustorp.com',
-                            // to: 'kethavatsriram123@gmail.com',
-                            to: `${req.body.email}`, // list of receivers
-                            subject: "Action Required: This is the mail from your Team", // Subject line
-                            text: "Hello world?", // plain text body
-                            html: output, // html body
+                    try {
+                        const user = await Organization({
+                            // username: tempUsername,
+                            username: req.body.username,
+                            email: req.body.email,
+                            password: req.body.password,
+                            organizationId: orgId,
+                            // organizationId: "646363",
+                            organizationName: orgDetails.organizationName,
+                            role: req.body.role,
+                            createdDate: new Date()
                         });
 
-                        console.log("Message sent: %s", info.messageId);
+                        await user.save();
 
+                        
+
+                        // Email code 
+
+                        const output = `
+                        <b>Hi ${req.body.username}</b>
+                        <p>You have a request from ( ${orgDetails.email} ) to join Project-M</p>
+                        <p>Your temporary details are created by your Admin, use those details to login to Project-M application</p>
+                        <b>Details:</b>
+                        <ul style="padding: 0;">
+                        <li style="list-style-type: none;">Username: ${req.body.username}</li>
+                        <li style="list-style-type: none;">Email: ${req.body.email}</li>
+                        <li style="list-style-type: none;">Password: ${req.body.password}</li>
+                        </ul>
+                        </br>
+                        <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application
+                        </br>
+                        </hr>
+                        <h3>Note:</h3>
+                        <p>1) Please don't share these details with anyone</p>
+                        <p>2) You have an option to change these temporary details after you logged into the Project-M application</p>
+                        <p>3) Just click on "Profile" in your menu to change any details</p>`
+
+
+                        // console.log(output)
+
+                        const config = {
+                            service: 'gmail',
+                            auth: {
+                                // user: orgDetails.email, //organization email 
+                                user: process.env.ORG_EMAIL, //organization email 
+                                pass: process.env.MAIL_PASS // organization email's password 
+                            }
+                        }
+
+
+                        const transporter = nodemailer.createTransport(config)
+
+                        // async..await is not allowed in global scope, must use a wrapper
+
+                        try {
+                            const info = await transporter.sendMail({
+                                from: `${orgDetails.email}`,
+                                to: `${req.body.email}`, // list of receivers
+                                subject: "Action Required: This is the mail from your Team", // Subject line
+                                text: "Hello world?", // plain text body
+                                html: output, // html body
+                            });
+
+                            console.log("Message sent: %s", info.messageId);
+
+                            // success response to frontend
+                            res.status(200).json({message:'User added and Email sent successfully'})
+                            
+                        }
+                        catch(err) {
+                            res.status(404).json({err_msg: 'Email not sent, due to some errors'})
+                        }
+                     
                     }
-
-                    main()
-                    .catch(err => res.status(404).json({err_msg: 'Email not sent, due to some errors'}))
-
-
-                    // success response to frontend 
-                    res.status(200).json({message:'User added and Email sent successfully'})
+                    catch(err) {
+                        res.status(500).json({err_msg: err})
+                    }
+                    
 
                 }
 
@@ -138,10 +126,10 @@ router.post('/add-user/:orgId', async (req, res) => {
         else {
             res.status(404).json({err_msg: 'Username already exists'});
         }
-    }
-    catch(err) {
-        res.status(500).json({err_msg: err});
-    }
+    // }
+    // catch(err) {
+    //     res.status(500).json({err_msg: err});
+    // }
     
 })
 
