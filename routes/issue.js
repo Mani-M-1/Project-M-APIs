@@ -31,14 +31,7 @@ router.post('/', async (req, res) => {
 router.get('/find', async (req, res) => {
     try {
         const issues = req.query.search_q !== '' 
-            ? await Issue.find(
-                {
-                    $or: [
-                        {issueTitle: new RegExp(req.query.search_q, 'i')},
-                        {issueDescription: new RegExp(req.query.search_q, 'i')}
-                    ]
-                }
-            ) 
+            ? await Issue.find({issueTitle: new RegExp(req.query.search_q, 'i')}) 
             : await Issue.find();
          
         res.status(200).json(issues);

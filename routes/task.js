@@ -179,7 +179,14 @@ router.post('/createTask', async (req, res) => {
 router.get('/find', async (req, res) => {
     try {
         const tasks = req.query.search_q !== '' 
-            ? await Task.find({taskTitle: new RegExp(req.query.search_q, 'i')}) 
+            ? await Task.find(
+                {
+                    $or: [
+                        {taskTitle: new RegExp(req.query.search_q, 'i')},
+                        {assignedTo: new RegExp(req.query.search_q, 'i')}
+                    ]
+                }
+            ) 
             : await Task.find();
          
         res.status(200).json(tasks);
