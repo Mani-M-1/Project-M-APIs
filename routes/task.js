@@ -12,11 +12,69 @@ const Organization = require('../Models/Organization');
 
 
 
+
+
+
+
+// "TaskAddedEmailNotification" function to send emails for a particular user that his task is updated
+const TaskAddedEmailNotification = async (orgDetails, task, userDetails) => {
+    // Email code 
+
+    const output = `
+        <b>Hi ${task.assignedTo}</b>
+        <p>You have a request from ( ${orgDetails.email} ) through Project-M</p>
+        <p>A new Task has been assigned to you</p>
+        <h4>Task Details:</h4>
+        <ul style="padding: 0;">
+            <li style="list-style-type: none;">TaskId: ${task.taskId}</li>
+            <li style="list-style-type: none;">TaskShortId: ${task.taskShortId}</li>
+            <li style="list-style-type: none;">TaskTitle: ${task.taskTitle}</li>
+        </ul>
+        <p>You can check the new tasks that are assigned to you in Project-M Application</p>
+        <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
+                
+
+
+    // console.log(output)
+
+    const config = {
+        service: 'gmail',
+        auth: {
+            // user: orgDetails.email, //organization email 
+            user: process.env.ORG_EMAIL, //organization email 
+            pass: process.env.MAIL_PASS // organization email's password 
+        }
+    }
+
+
+    const transporter = nodemailer.createTransport(config)
+
+    const info = await transporter.sendMail({
+        from: `${orgDetails.email}`,
+        to: `${userDetails.email}`, // list of receivers
+        subject: "Action Required: A Task has been assigned to you in Project-M Application", // Subject line
+        text: "Hello world?", // plain text body
+        html: output, // html body
+    });
+
+    console.log("Message sent: %s", info.messageId);
+
+}
+
+
+
+
+
+
+
+
 // create Task 
 router.post('/createTask', async (req, res) => {
+    // console.log(req.body)
     
-
+    
     const project = await Project.findOne({projectId: req.body.projectId})
+    // console.log(project)
 
     
     
@@ -32,11 +90,12 @@ router.post('/createTask', async (req, res) => {
             
             const userDetails = await Organization.findOne({username: req.body.assignedTo, organizationId: req.body.orgId})
             // console.log(userDetails)
-    
-
+            
+            
             
             // getting all tasks based on "projectId"
             const tasks = await Task.find({projectId: req.body.projectId});
+            // console.log(tasks)
 
     
 
@@ -71,9 +130,6 @@ router.post('/createTask', async (req, res) => {
 
 
 
-            
-
-
 
             // creating "task" object 
             const task = new Task({
@@ -92,61 +148,17 @@ router.post('/createTask', async (req, res) => {
             })
 
             await task.save();
-            // console.log(task.taskId)
-            // console.log(task.taskShortId)
-            // console.log(task.taskTitle)
 
-            // res.status(200).json(task);
-
-            // Email code 
-
-            const output = `
-                <b>Hi ${req.body.assignedTo}</b>
-                <p>You have a request from ( ${orgDetails.email} ) through Project-M</p>
-                <p>A new Task has been assigned to you</p>
-                <h4>Task Details:</h4>
-                <ul style="padding: 0;">
-                    <li style="list-style-type: none;">TaskId: ${task.taskId}</li>
-                    <li style="list-style-type: none;">TaskShortId: ${task.taskShortId}</li>
-                    <li style="list-style-type: none;">TaskTitle: ${task.taskTitle}</li>
-                </ul>
-                <p>You can check the new tasks that are assigned to you in Project-M Application</p>
-                <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
-                        
-
-
-            // console.log(output)
-
-            const config = {
-                service: 'gmail',
-                auth: {
-                    // user: orgDetails.email, //organization email 
-                    user: process.env.ORG_EMAIL, //organization email 
-                    pass: process.env.MAIL_PASS // organization email's password 
-                }
-            }
-
-
-            const transporter = nodemailer.createTransport(config)
-
-            // async..await is not allowed in global scope, must use a wrapper
+            
+            
+            // success response to frontend
+            res.status(200).json(task)
+                
 
             try {
-                const info = await transporter.sendMail({
-                    from: `${orgDetails.email}`,
-                    to: `${userDetails.email}`, // list of receivers
-                    subject: "Action Required: A Task has been assigned to you in Project-M Application", // Subject line
-                    text: "Hello world?", // plain text body
-                    html: output, // html body
-                });
 
-                // console.log(info)
+                TaskAddedEmailNotification(orgDetails, task, userDetails)
 
-                console.log("Message sent: %s", info.messageId);
-
-                // success response to frontend
-                res.status(200).json(task)
-                
             }
             catch(err) {
                 // console.log(err)
@@ -161,18 +173,13 @@ router.post('/createTask', async (req, res) => {
 }) 
 
 
+
+
 // get all tasks
 router.get('/find', async (req, res) => {
     try {
         const tasks = req.query.search_q !== '' 
-            ? await Task.find(
-                {
-                    $or: [
-                        {taskTitle: new RegExp(req.query.search_q, 'i')},
-                        {assignedTo: new RegExp(req.query.search_q, 'i')}
-                    ]
-                }
-            ) 
+            ? await Task.find({taskTitle: new RegExp(req.query.search_q, 'i')}) 
             : await Task.find();
          
         res.status(200).json(tasks);
@@ -182,6 +189,7 @@ router.get('/find', async (req, res) => {
         res.status(500).json({err_msg: err});
     }
 }) 
+
 
 
 // get specific Task by "id"
@@ -211,93 +219,144 @@ router.get('/:id/:orgId', async (req, res) => {
 }) 
 
 
+
+
+
+
+
+
+// "TaskUpdateEmailNotification" function to send emails for a particular user that his task is updated
+const TaskUpdateEmailNotification = async (orgDetails, userDetails, taskDetails) => {
+    // Email code 
+
+    const output = `
+        <b>Hi ${taskDetails.assignedTo}</b>
+        <p>You have a request from ( ${orgDetails.email} ) through Project-M</p>
+        <p>A Task has been updated</p>
+        <h4>Task Details:</h4>
+        <ul style="padding: 0;">
+            <li style="list-style-type: none;">TaskId: ${taskDetails.taskId}</li>
+            <li style="list-style-type: none;">TaskShortId: ${taskDetails.taskShortId}</li>
+            <li style="list-style-type: none;">TaskTitle: ${taskDetails.taskTitle}</li>
+            <li style="list-style-type: none;">TaskStatus: ${taskDetails.taskStatus}</li>
+        </ul>
+        <p>You can check the updated task in Project-M Application</p>
+        <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
+
+
+
+    const config = {
+        service: 'gmail',
+        auth: {
+            // user: orgDetails.email, //organization email 
+            user: process.env.ORG_EMAIL, //organization email 
+            pass: process.env.MAIL_PASS // organization email's password 
+        }
+    }
+
+
+    const transporter = nodemailer.createTransport(config)
+
+    const info = await transporter.sendMail({
+        from: `${orgDetails.email}`,
+        to: `${userDetails.email}`, // list of receivers
+        subject: "Action Required: Your Task has been updated in Project-M Application", // Subject line
+        text: "Hello world?", // plain text body
+        html: output, // html body
+    });
+
+
+    console.log("Message sent: %s", info.messageId);
+}
+
+
+
+
+
 // update a specific Task by id
 router.put('/:id/:orgId/:userId', async (req, res) => {
-    try {
+    const {assignedTo, ...others} = req.body
 
-        // console.log(req.body)
-
-        const orgDetails = await Organization.findOne({_id: req.params.userId, organizationId: req.params.orgId})
-        // console.log(orgDetails) 
-        
-        
+    //this is to get task details to show in email 
+    const taskDetails = await Task.findOne({taskId: req.params.id})
     
-
-        const updatedTask = await Task.updateOne({taskId: req.params.id}, {
-            $set: req.body
-        }, {new: true})
-
-    //    res.status(200).json(updatedTask)
-
-        //this is to ge task details to show in email 
-        const taskDetails = await Task.findOne({taskId: req.params.id})
-
-        const userDetails = await Organization.findOne({username: taskDetails.assignedTo, organizationId: req.params.orgId})
-
-
-        // Email code 
-
-        const output = `
-            <b>Hi ${taskDetails.assignedTo}</b>
-            <p>You have a request from ( ${orgDetails.email} ) through Project-M</p>
-            <p>A Task has been updated</p>
-            <h4>Task Details:</h4>
-            <ul style="padding: 0;">
-                <li style="list-style-type: none;">TaskId: ${taskDetails.taskId}</li>
-                <li style="list-style-type: none;">TaskShortId: ${taskDetails.taskShortId}</li>
-                <li style="list-style-type: none;">TaskTitle: ${taskDetails.taskTitle}</li>
-                <li style="list-style-type: none;">TaskStatus: ${taskDetails.taskStatus}</li>
-            </ul>
-            <p>You can check the updated task in Project-M Application</p>
-            <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
-
-
-
-        const config = {
-            service: 'gmail',
-            auth: {
-                // user: orgDetails.email, //organization email 
-                user: process.env.ORG_EMAIL, //organization email 
-                pass: process.env.MAIL_PASS // organization email's password 
-            }
-        }
-
-
-        const transporter = nodemailer.createTransport(config)
-
-        // async..await is not allowed in global scope, must use a wrapper
+    const userDetails = await Organization.findOne({username: taskDetails.assignedTo, organizationId: req.params.orgId})
+    
+    if (!userDetails && !assignedTo) {
+        res.status(404).json({err_msg: 'User has been deleted, please assign the task to other existing Employee'})
+    }
+    else if (!userDetails && assignedTo) {
 
         try {
-            const info = await transporter.sendMail({
-                from: `${orgDetails.email}`,
-                to: `${userDetails.email}`, // list of receivers
-                subject: "Action Required: Your Task has been updated in Project-M Application", // Subject line
-                text: "Hello world?", // plain text body
-                html: output, // html body
-            });
+            const orgDetails = await Organization.findOne({_id: req.params.userId, organizationId: req.params.orgId})
+            
+            const assigneeDetails = await Organization.findOne({username: assignedTo})
 
-
-            console.log("Message sent: %s", info.messageId);
+    
+            const updatedTask = await Task.updateOne({taskId: req.params.id}, {
+                $set: req.body
+            }, {new: true})
+    
+           
+    
+    
+            
 
             // success response to frontend
-            res.status(200).json(taskDetails)
-            
+            res.status(200).json({message: "Task Updated Successfully"})
+
+            try {
+                
+                
+                TaskUpdateEmailNotification(orgDetails, assigneeDetails, taskDetails)
+                
+                
+            }
+            catch(err) {
+                res.status(404).json({err_msg: 'Email not sent, due to some errors'})
+            }
+    
         }
         catch(err) {
-            // console.log(err)
-            res.status(404).json({err_msg: 'Email not sent, due to some errors'})
+            res.status(500).json({err_msg: err});
         }
-
-
-
-
-
     }
-    catch(err) {
-        res.status(500).json({err_msg: err});
+    else {
+
+        try {
+            const orgDetails = await Organization.findOne({_id: req.params.userId, organizationId: req.params.orgId})
+            
+    
+            const updatedTask = await Task.updateOne({taskId: req.params.id}, {
+                $set: req.body
+            }, {new: true})
+    
+           
+    
+    
+            
+
+            // success response to frontend
+            res.status(200).json({message: "Task Updated Successfully"})
+
+            try {
+                
+                
+                TaskUpdateEmailNotification(orgDetails, userDetails, taskDetails)
+                
+                
+            }
+            catch(err) {
+                res.status(404).json({err_msg: 'Email not sent, due to some errors'})
+            }
+    
+        }
+        catch(err) {
+            res.status(500).json({err_msg: err});
+        }
     }
+
 }) 
-
 
 
 

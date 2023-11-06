@@ -11,7 +11,7 @@ const Organization = require('../Models/Organization');
 router.post('/', async (req, res) => {
     const user = await Organization.findOne({organizationId: req.body.userId});
 
-    const projects = await Project.find();
+    const projects = await Project.find({organizationId: req.body.userId});
 
     
 

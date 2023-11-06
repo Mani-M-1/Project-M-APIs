@@ -12,6 +12,7 @@ const projectRoute = require('./routes/project')
 const taskRoute = require('./routes/task')
 const profileRoute = require('./routes/profile')
 const manageUsersRoute = require('./routes/manageUsers')
+const riseIssueRoute = require('./routes/issue')
 
 
 //port value 
@@ -74,6 +75,7 @@ app.use('/project', projectRoute)
 app.use('/task', taskRoute)
 app.use('/profile', profileRoute)
 app.use('/manage-users', manageUsersRoute)
+app.use('/rise-issue', riseIssueRoute)
 
 
 

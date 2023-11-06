@@ -3,6 +3,63 @@ const router = express.Router();
 const nodemailer = require('nodemailer');
 
 const Organization = require('../Models/Organization');
+const Task = require('../Models/Task');
+
+
+
+
+
+// Email Notification function for "Add User" 
+const AddUSerEmailNotification  = async (orgDetails, reqBody) => {
+
+    // Email code 
+
+    const output = `
+    <b>Hi ${reqBody.username}</b>
+    <p>You have a request from ( ${orgDetails.email} ) to join Project-M</p>
+    <p>Your temporary details are created by your Admin, use those details to login to Project-M application</p>
+    <b>Details:</b>
+    <ul style="padding: 0;">
+    <li style="list-style-type: none;">Username: ${reqBody.username}</li>
+    <li style="list-style-type: none;">Email: ${reqBody.email}</li>
+    <li style="list-style-type: none;">Password: ${reqBody.password}</li>
+    </ul>
+    </br>
+    <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application
+    </br>
+    </hr>
+    <h3>Note:</h3>
+    <p>1) Please don't share these details with anyone</p>
+    <p>2) You have an option to change these temporary details after you logged into the Project-M application</p>
+    <p>3) Just click on "Profile" in your menu to change any details</p>`
+
+
+    // console.log(output)
+
+    const config = {
+        service: 'gmail',
+        auth: {
+            // user: orgDetails.email, //organization email 
+            user: process.env.ORG_EMAIL, //organization email 
+            pass: process.env.MAIL_PASS // organization email's password 
+        }
+    }
+
+
+    const transporter = nodemailer.createTransport(config)
+
+    const info = await transporter.sendMail({
+        from: `${orgDetails.email}`,
+        to: `${reqBody.email}`, // list of receivers
+        subject: "Action Required: This is the mail from your Team", // Subject line
+        text: "Hello world?", // plain text body
+        html: output, // html body
+    });
+
+    console.log("Message sent: %s", info.messageId);
+}
+
+
 
 
 
@@ -50,59 +107,18 @@ router.post('/add-user/:orgId', async (req, res) => {
 
                         await user.save();
 
+                        // success response to frontend is written before "Email" is sent because "Nodemailer" will execute thes emails in "stack" which takes time
+                        res.status(200).json({message:'User added and Email sent successfully'})
+
                         
 
-                        // Email code 
-
-                        const output = `
-                        <b>Hi ${req.body.username}</b>
-                        <p>You have a request from ( ${orgDetails.email} ) to join Project-M</p>
-                        <p>Your temporary details are created by your Admin, use those details to login to Project-M application</p>
-                        <b>Details:</b>
-                        <ul style="padding: 0;">
-                        <li style="list-style-type: none;">Username: ${req.body.username}</li>
-                        <li style="list-style-type: none;">Email: ${req.body.email}</li>
-                        <li style="list-style-type: none;">Password: ${req.body.password}</li>
-                        </ul>
-                        </br>
-                        <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application
-                        </br>
-                        </hr>
-                        <h3>Note:</h3>
-                        <p>1) Please don't share these details with anyone</p>
-                        <p>2) You have an option to change these temporary details after you logged into the Project-M application</p>
-                        <p>3) Just click on "Profile" in your menu to change any details</p>`
-
-
-                        // console.log(output)
-
-                        const config = {
-                            service: 'gmail',
-                            auth: {
-                                // user: orgDetails.email, //organization email 
-                                user: process.env.ORG_EMAIL, //organization email 
-                                pass: process.env.MAIL_PASS // organization email's password 
-                            }
-                        }
-
-
-                        const transporter = nodemailer.createTransport(config)
-
-                        // async..await is not allowed in global scope, must use a wrapper
 
                         try {
-                            const info = await transporter.sendMail({
-                                from: `${orgDetails.email}`,
-                                to: `${req.body.email}`, // list of receivers
-                                subject: "Action Required: This is the mail from your Team", // Subject line
-                                text: "Hello world?", // plain text body
-                                html: output, // html body
-                            });
+                            
+                            // calling "Email Notification" function args: orgaDetails, req.body
+                            AddUSerEmailNotification(orgDetails, req.body)
 
-                            console.log("Message sent: %s", info.messageId);
-
-                            // success response to frontend
-                            res.status(200).json({message:'User added and Email sent successfully'})
+                            
                             
                         }
                         catch(err) {
@@ -132,13 +148,6 @@ router.post('/add-user/:orgId', async (req, res) => {
     // }
     
 })
-
-
-
-
-
-
-
 
 
 
@@ -192,7 +201,12 @@ router.put('/:id', async (req, res) => {
 // delete a specific user by id
 router.delete('/:id', async (req, res) => {
     try {
-       await Organization.findByIdAndDelete({_id: req.params.id})
+       const deletedUser = await Organization.findByIdAndDelete({_id: req.params.id})
+
+    //    await Task.deleteMany({assignedTo: deletedUser.username})
+       
+
+    //    res.status(200).json({message: 'User and his associate tasks were deleted successfully'})
        res.status(200).json({message: 'User Deleted Successfully'})
     }
     catch(err) {
