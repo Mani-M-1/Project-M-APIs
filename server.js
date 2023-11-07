@@ -33,12 +33,13 @@ connectDB();
 
 //using required middlewares for "parsing json bodies" and "also for using different ports"
 app.use(express.json());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({extended: true}));
-app.use(cors());
-// app.use(cors({
-//   origin: process.env.ORIGIN_URL
-// }));
+
+// app.use(cors());
+app.use(cors({
+  origin: 'https://project-m-react-app.vercel.app',
+  methods: 'GET, POST, PUT, DELETE',
+  optionsSuccessStatus: 204,
+}));
 
 
 
