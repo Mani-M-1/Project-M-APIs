@@ -86,16 +86,13 @@ router.post('/createTask', async (req, res) => {
 
 
             const orgDetails = await Organization.findOne({_id: req.body.userId, organizationId: req.body.orgId})
-            // console.log(orgDetails)
             
             const userDetails = await Organization.findOne({username: req.body.assignedTo, organizationId: req.body.orgId})
-            // console.log(userDetails)
             
             
             
             // getting all tasks based on "projectId"
             const tasks = await Task.find({projectId: req.body.projectId});
-            // console.log(tasks)
 
     
 
@@ -107,28 +104,28 @@ router.post('/createTask', async (req, res) => {
                 numberForTaskshortId = tasks.length;
             }
 
-
+            
+            
             // for creating array of words 
-
+            
             let taskWordsStartingLetter;
             if (req.body && req.body.taskTitle) {
                 if (req.body.taskTitle.split(' ')) {
                     let taskWordsArr = req.body.taskTitle.split(' ');
-
+                    
                     // for getting starting letters of each word 
                     taskWordsStartingLetter = taskWordsArr.map(eachWord => eachWord[0].toUpperCase());
-
+                    
                 }else {
                     let taskWord= req.body.taskTitle
                     taskWordsStartingLetter = taskWord.slice(1, 0).toUpperCase();
                 }
             }
-
-           
+            
+            
             // for joining letters into taskShortId 
             const  taskShortId = taskWordsStartingLetter.join('') + '-' + numberForTaskshortId ;
-
-
+            
 
 
             // creating "task" object 
