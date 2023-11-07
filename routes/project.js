@@ -4,6 +4,7 @@ const {v4 : uuidv4} = require('uuid')
 
 const Project = require('../Models/Project');
 const Organization = require('../Models/Organization');
+const Task = require('../Models/Task');
 
 
 
@@ -146,8 +147,15 @@ router.put('/:projectId', async (req, res) => {
 // delete a specific project by id
 router.delete('/:projectId', async (req, res) => {
     try {
-       await Project.deleteOne({projectId: req.params.projectId})
-       res.status(200).json({message: 'Project Deleted Successfully'})
+        console.log(req.params.projectId)
+
+        // deleting a specific project by it's "projectId"
+        const deletedProject = await Project.deleteOne({projectId: req.params.projectId})
+        
+        // deleting a "all tasks" of a specific "project"
+        const deletedTasks = await Task.deleteMany({projectId: req.params.projectId})
+
+        res.status(200).json({message: 'Project and Tasks related to that project are Deleted Successfully'})
     }
     catch(err) {
         res.status(500).json({err_msg: err});
