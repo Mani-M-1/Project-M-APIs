@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const taskSchema = new mongoose.Schema({
 	//taskId should be combination of projectname and it should start with random numbers (starting from 0 to 1000) ex: 0createapis
 	taskId: {type: String, required: true, unique: true},
-	taskShortId: {type: String, required: true, unique: true},
+	taskShortId: {type: String, required: true},
 	taskTitle: {type: String, required: true},
 	taskDescription: {type: String, required: true},
 	assignedTo: {type: String, required: true},
