@@ -92,8 +92,9 @@ router.post('/createTask', async (req, res) => {
             
             
             // getting all tasks based on "projectId" to get specific tasks of specific project
-            // const tasks = await Task.find({projectId: req.body.projectId});
-            const tasks = await Task.find({projectId: project.projectId});
+            const tasks = await Task.find({projectId: req.body.projectId});
+            // const tasks = await Task.find();
+            console.log(tasks)
 
     
 
@@ -126,7 +127,7 @@ router.post('/createTask', async (req, res) => {
             
             // for joining letters into taskShortId 
             const  taskShortId = taskWordsStartingLetter.join('') + '-' + numberForTaskshortId ;
-            
+            console.log(taskShortId)
 
 
             // creating "task" object 
@@ -145,12 +146,13 @@ router.post('/createTask', async (req, res) => {
                 createdDate: new Date()
             })
 
-            await task.save();
+            const createdTask = await task.save();
+            console.log(createdTask)
 
             
             
             // success response to frontend
-            res.status(200).json(task)
+            res.status(200).json(createdTask)
                 
 
             try {
