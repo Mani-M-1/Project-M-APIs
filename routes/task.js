@@ -92,7 +92,8 @@ router.post('/createTask', async (req, res) => {
             
             
             // getting all tasks based on "projectId" to get specific tasks of specific project
-            const tasks = await Task.find({projectId: req.body.projectId});
+            // const tasks = await Task.find({projectId: req.body.projectId});
+            const tasks = await Task.find({projectId: project.projectId});
 
     
 
