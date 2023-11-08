@@ -159,12 +159,10 @@ router.post('/createTask', async (req, res) => {
 
             }
             catch(err) {
-                // console.log(err)
                 res.status(404).json({err_msg: 'Email not sent, due to some errors'})
             }
         }
         catch(err) {
-            // console.log(err)
             res.status(500).json({err_msg: err});
         }
     }
