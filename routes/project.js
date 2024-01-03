@@ -24,12 +24,6 @@ router.post('/', async (req, res) => {
         numberForProjectShortId = projects.length;
     }
 
-    // const randomNum = Math.floor(Math.random() * 1000)
-
-    // const projectId = req.body.projectTitle.toLowerCase().replace(/\s+/g, '') + "-" + randomNum;
-
-
-
 
     // for creating array of words 
 

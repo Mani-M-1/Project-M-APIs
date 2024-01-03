@@ -1,7 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 
 
@@ -35,12 +33,6 @@ connectDB();
 app.use(express.json());
 
 app.use(cors());
-
-// app.use(cors({
-//   origin: 'https://project-m-react-app.vercel.app',
-//   methods: 'GET, POST, PUT, DELETE',
-//   optionsSuccessStatus: 204,
-// }));
 
 
 

@@ -3,7 +3,6 @@ const router = express.Router();
 const nodemailer = require('nodemailer');
 
 const Organization = require('../Models/Organization');
-const Task = require('../Models/Task');
 
 
 
@@ -34,12 +33,10 @@ const AddUSerEmailNotification  = async (orgDetails, reqBody) => {
     <p>3) Just click on "Profile" in your menu to change any details</p>`
 
 
-    // console.log(output)
 
     const config = {
         service: 'gmail',
         auth: {
-            // user: orgDetails.email, //organization email 
             user: process.env.ORG_EMAIL, //organization email 
             pass: process.env.MAIL_PASS // organization email's password 
         }
@@ -70,82 +67,71 @@ router.post('/add-user/:orgId', async (req, res) => {
     const {orgId} = req.params;
     
     const userFromDb = await Organization.findOne({username: req.body.username});
-    // console.log(userFromDb)
     
     const emailFromDb = await Organization.findOne({email: req.body.email});
-    // console.log(emailFromDb)
     
     const orgDetails = await Organization.findOne({ _id: req.body.adminId, organizationId: orgId});
-    // console.log(orgDetails)
     
 
-    // try {
 
-        if (!userFromDb) { // checking whether "username" already exists in database
-            if (!emailFromDb) {  // checking whether "email" already exists in database
-
-
-                if (!orgDetails) {  // checking whether "organization" already exists in database
-                    res.status(404).json({err_msg: 'No Organization found on the given orgId'});
-                }
-                else {
-
-                    // const tempUsername = req.body.email.split("@")[0];
-
-                    try {
-                        const user = await Organization({
-                            // username: tempUsername,
-                            username: req.body.username,
-                            email: req.body.email,
-                            password: req.body.password,
-                            organizationId: orgId,
-                            // organizationId: "646363",
-                            organizationName: orgDetails.organizationName,
-                            role: req.body.role,
-                            createdDate: new Date()
-                        });
-
-                        await user.save();
-
-                        // success response to frontend is written before "Email" is sent because "Nodemailer" will execute thes emails in "stack" which takes time
-                        res.status(200).json({message:'User added and Email sent successfully'})
-
-                        
+    if (!userFromDb) { // checking whether "username" already exists in database
+        if (!emailFromDb) {  // checking whether "email" already exists in database
 
 
-                        try {
-                            
-                            // calling "Email Notification" function args: orgaDetails, req.body
-                            AddUSerEmailNotification(orgDetails, req.body)
-
-                            
-                            
-                        }
-                        catch(err) {
-                            res.status(404).json({err_msg: 'Email not sent, due to some errors'})
-                        }
-                     
-                    }
-                    catch(err) {
-                        res.status(500).json({err_msg: err})
-                    }
-                    
-
-                }
-
-
+            if (!orgDetails) {  // checking whether "organization" already exists in database
+                res.status(404).json({err_msg: 'No Organization found on the given orgId'});
             }
             else {
-                res.status(404).json({err_msg: 'Email already exists'});
+
+
+                try {
+                    const user = await Organization({
+                        username: req.body.username,
+                        email: req.body.email,
+                        password: req.body.password,
+                        organizationId: orgId,
+                        organizationName: orgDetails.organizationName,
+                        role: req.body.role,
+                        createdDate: new Date()
+                    });
+
+                    await user.save();
+
+                    // success response to frontend is written before "Email" is sent because "Nodemailer" will execute thes emails in "stack" which takes time
+                    res.status(200).json({message:'User added and Email sent successfully'})
+
+                    
+
+
+                    try {
+                        
+                        // calling "Email Notification" function args: orgaDetails, req.body
+                        AddUSerEmailNotification(orgDetails, req.body)
+
+                        
+                        
+                    }
+                    catch(err) {
+                        res.status(404).json({err_msg: 'Email not sent, due to some errors'})
+                    }
+                    
+                }
+                catch(err) {
+                    res.status(500).json({err_msg: err})
+                }
+                
+
             }
+
+
         }
         else {
-            res.status(404).json({err_msg: 'Username already exists'});
+            res.status(404).json({err_msg: 'Email already exists'});
         }
-    // }
-    // catch(err) {
-    //     res.status(500).json({err_msg: err});
-    // }
+    }
+    else {
+        res.status(404).json({err_msg: 'Username already exists'});
+    }
     
 })
 
@@ -203,10 +189,6 @@ router.delete('/:id', async (req, res) => {
     try {
        const deletedUser = await Organization.findByIdAndDelete({_id: req.params.id})
 
-    //    await Task.deleteMany({assignedTo: deletedUser.username})
-       
-
-    //    res.status(200).json({message: 'User and his associate tasks were deleted successfully'})
        res.status(200).json({message: 'User Deleted Successfully'})
     }
     catch(err) {

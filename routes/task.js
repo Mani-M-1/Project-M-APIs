@@ -40,7 +40,6 @@ const TaskAddedEmailNotification = async (orgDetails, task, userDetails) => {
     const config = {
         service: 'gmail',
         auth: {
-            // user: orgDetails.email, //organization email 
             user: process.env.ORG_EMAIL, //organization email 
             pass: process.env.MAIL_PASS // organization email's password 
         }
@@ -70,11 +69,8 @@ const TaskAddedEmailNotification = async (orgDetails, task, userDetails) => {
 
 // create Task 
 router.post('/createTask', async (req, res) => {
-    // console.log(req.body)
-    
     
     const project = await Project.findOne({projectId: req.body.projectId})
-    // console.log(project)
 
     
     
@@ -93,8 +89,6 @@ router.post('/createTask', async (req, res) => {
             
             // getting all tasks based on "projectId" to get specific tasks of specific project
             const tasks = await Task.find({projectId: req.body.projectId});
-            // const tasks = await Task.find();
-
     
 
             let numberForTaskshortId;
@@ -131,7 +125,6 @@ router.post('/createTask', async (req, res) => {
 
             // creating "task" object 
             const task = new Task({
-                // projectTitle: req.body.projectTitle,
                 taskId: uuidv4(),
                 taskShortId,
                 taskTitle: req.body.taskTitle,
@@ -206,12 +199,10 @@ router.get('/:id/:orgId', async (req, res) => {
         }
         else {
             const task = await Task.findOne({taskId: req.params.id})
-            // console.log(task)
 
             const project = await Project.findOne({projectId: task.projectId})
 
             const {projectTitle} = project._doc;
-            // console.log(projectTitle)
             
 
             res.status(200).json({usersFromSameOrganization, taskDetails: {...task._doc, projectTitle}});
@@ -252,7 +243,6 @@ const TaskUpdateEmailNotification = async (orgDetails, userDetails, taskDetails)
     const config = {
         service: 'gmail',
         auth: {
-            // user: orgDetails.email, //organization email 
             user: process.env.ORG_EMAIL, //organization email 
             pass: process.env.MAIL_PASS // organization email's password 
         }
@@ -367,7 +357,7 @@ router.put('/:id/:orgId/:userId', async (req, res) => {
 
 
 // delete a specific Task by id
-router.delete('/:taskId', async (req, res) => {
+router.delete('/:taskId', async (req, res) => {    
     try {
        await Task.deleteOne({taskId: req.params.taskId})
        res.status(200).json({message: 'Task Deleted Successfully'})
