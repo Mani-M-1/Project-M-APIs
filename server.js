@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
+const config = require('./config');
 
 //importing required routes
 const signupRoute = require('./routes/signup')

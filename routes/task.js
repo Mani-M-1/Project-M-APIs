@@ -11,9 +11,9 @@ const Project = require('../Models/Project');
 const Organization = require('../Models/Organization');
 
 
+const config = require('../config');
 
-
-
+const {FRONTEND_URL, ORG_EMAIL, MAIL_PASS} = config
 
 
 // "TaskAddedEmailNotification" function to send emails for a particular user that his task is updated
@@ -31,7 +31,7 @@ const TaskAddedEmailNotification = async (orgDetails, task, userDetails) => {
             <li style="list-style-type: none;">TaskTitle: ${task.taskTitle}</li>
         </ul>
         <p>You can check the new tasks that are assigned to you in Project-M Application</p>
-        <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
+        <p>Please <a href="${FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
                 
 
 
@@ -40,8 +40,8 @@ const TaskAddedEmailNotification = async (orgDetails, task, userDetails) => {
     const config = {
         service: 'gmail',
         auth: {
-            user: process.env.ORG_EMAIL, //organization email 
-            pass: process.env.MAIL_PASS // organization email's password 
+            user: ORG_EMAIL, //organization email 
+            pass: MAIL_PASS // organization email's password 
         }
     }
 
@@ -236,15 +236,15 @@ const TaskUpdateEmailNotification = async (orgDetails, userDetails, taskDetails)
             <li style="list-style-type: none;">TaskStatus: ${taskDetails.taskStatus}</li>
         </ul>
         <p>You can check the updated task in Project-M Application</p>
-        <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
+        <p>Please <a href="${FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application`
 
 
 
     const config = {
         service: 'gmail',
         auth: {
-            user: process.env.ORG_EMAIL, //organization email 
-            pass: process.env.MAIL_PASS // organization email's password 
+            user: ORG_EMAIL, //organization email 
+            pass: MAIL_PASS // organization email's password 
         }
     }
 

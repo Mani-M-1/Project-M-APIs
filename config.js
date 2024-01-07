@@ -9,5 +9,8 @@ module.exports = {
     NODE_ENV : process.env.NODE_ENV || 'development',
     HOST: process.env.HOST || 'localhost',
     PORT : process.env.PORT || 8080,
-    MONGOOSE_URI: process.env.MONGOOSE_URI
+    MONGOOSE_URI: process.env.MONGOOSE_URI,
+    FRONTEND_URL: process.env.FRONTEND_URL,
+    ORG_EMAIL: process.env.ORG_EMAIL,
+    MAIL_PASS: process.env.MAIL_PASS
 }

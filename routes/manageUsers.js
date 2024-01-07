@@ -6,6 +6,8 @@ const Organization = require('../Models/Organization');
 
 
 
+const config = require('../config');
+
 
 
 // Email Notification function for "Add User" 
@@ -24,7 +26,7 @@ const AddUSerEmailNotification  = async (orgDetails, reqBody) => {
     <li style="list-style-type: none;">Password: ${reqBody.password}</li>
     </ul>
     </br>
-    <p>Please <a href="${process.env.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application
+    <p>Please <a href="${config.FRONTEND_URL}/login" target="_blank"> click here </a> to enter the Project-M Application
     </br>
     </hr>
     <h3>Note:</h3>
@@ -37,8 +39,8 @@ const AddUSerEmailNotification  = async (orgDetails, reqBody) => {
     const config = {
         service: 'gmail',
         auth: {
-            user: process.env.ORG_EMAIL, //organization email 
-            pass: process.env.MAIL_PASS // organization email's password 
+            user: config.ORG_EMAIL, //organization email 
+            pass: config.MAIL_PASS // organization email's password 
         }
     }
 
