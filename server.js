@@ -22,8 +22,6 @@ const connectDB = require('./db/connect');
 //creating app server
 const app = express();
 
-//configuring .env file
-dotenv.config();
 
 //initializing db connection
 connectDB();
@@ -70,6 +68,15 @@ app.use('/task', taskRoute)
 app.use('/profile', profileRoute)
 app.use('/manage-users', manageUsersRoute)
 app.use('/rise-issue', riseIssueRoute)
+
+
+
+
+// console logging "environment" and other details
+
+console.log(`NODE_ENV=${config.NODE_ENV}`);
+console.log(`${config.HOST}`);
+console.log(`${config.MONGOOSE_URI}`);
 
 
 
